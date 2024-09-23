@@ -2,15 +2,13 @@ Question 1: By default, are Django signals executed synchronously or asynchronou
 Answer:
 By default, Django signals are executed synchronously. This means the signal handler (receiver) runs immediately after the signal is sent, and the main flow of execution is blocked until the handler finishes.
 
-Code Proof:
-# Signal receiver (runs when a User object is saved)
+Code:
 @receiver(post_save, sender=User)
 def signal_receiver(sender, instance, **kwargs):
     print("Signal started")
     time.sleep(5)  # Simulate long-running task
     print("Signal finished")
 
-# Create a new user (this triggers the post_save signal)
 new_user = User.objects.create(username="test_user")
 print("User created")
 
@@ -23,12 +21,11 @@ Question 2: Do Django signals run in the same thread as the caller?
 Answer:
 Yes, by default, Django signals run in the same thread as the caller. The code that sends the signal and the signal handler execute in the same thread.
 
-Code Proof:
+Code :
 @receiver(post_save, sender=User)
 def signal_receiver(sender, instance, **kwargs):
     print("Signal thread:", threading.current_thread().name)
 
-# Create a new user (this will trigger the post_save signal)
 print("Main thread:", threading.current_thread().name)
 new_user = User.objects.create(username="test_user")
 
@@ -40,7 +37,7 @@ Question 3: By default, do Django signals run in the same database transaction a
 Answer:
 Yes, by default, Django signals run in the same database transaction as the caller. If the transaction fails, the signal’s effects will also be rolled back.
 
-Code Proof:
+Code:
 @receiver(post_save, sender=User)
 def signal_receiver(sender, instance, **kwargs):
     print(f"Signal triggered for user: {instance.username}")
@@ -54,7 +51,6 @@ try:
 except Exception as e:
     print(e)
 
-# Check if the user is in the database
 user_exists = User.objects.filter(username="test_user").exists()
 print(f"User exists in DB: {user_exists}")
 
