@@ -1,0 +1,63 @@
+Question 1: By default, are Django signals executed synchronously or asynchronously?
+Answer:
+By default, Django signals are executed synchronously. This means the signal handler (receiver) runs immediately after the signal is sent, and the main flow of execution is blocked until the handler finishes.
+
+Code Proof:
+# Signal receiver (runs when a User object is saved)
+@receiver(post_save, sender=User)
+def signal_receiver(sender, instance, **kwargs):
+    print("Signal started")
+    time.sleep(5)  # Simulate long-running task
+    print("Signal finished")
+
+# Create a new user (this triggers the post_save signal)
+new_user = User.objects.create(username="test_user")
+print("User created")
+
+Explanation:
+The post_save signal is triggered when a User is created.
+The signal_receiver introduces a delay, showing that the flow is blocked until the signal completes. This demonstrates that the signal is synchronous.
+
+
+Question 2: Do Django signals run in the same thread as the caller?
+Answer:
+Yes, by default, Django signals run in the same thread as the caller. The code that sends the signal and the signal handler execute in the same thread.
+
+Code Proof:
+@receiver(post_save, sender=User)
+def signal_receiver(sender, instance, **kwargs):
+    print("Signal thread:", threading.current_thread().name)
+
+# Create a new user (this will trigger the post_save signal)
+print("Main thread:", threading.current_thread().name)
+new_user = User.objects.create(username="test_user")
+
+Explanation:
+The current thread is printed for both the main flow and the signal receiver.
+Since the output shows the same thread name for both, it proves that signals run in the same thread as the caller.
+
+Question 3: By default, do Django signals run in the same database transaction as the caller?
+Answer:
+Yes, by default, Django signals run in the same database transaction as the caller. If the transaction fails, the signal’s effects will also be rolled back.
+
+Code Proof:
+@receiver(post_save, sender=User)
+def signal_receiver(sender, instance, **kwargs):
+    print(f"Signal triggered for user: {instance.username}")
+
+# Using a transaction block
+try:
+    with transaction.atomic():
+        new_user = User.objects.create(username="test_user")
+        print("User created")
+        raise Exception("Something went wrong!")  # Force an error to rollback
+except Exception as e:
+    print(e)
+
+# Check if the user is in the database
+user_exists = User.objects.filter(username="test_user").exists()
+print(f"User exists in DB: {user_exists}")
+
+Explanation:
+The signal post_save is triggered when a user is created.
+If an exception occurs during the transaction, both the user creation and the signal handler's actions will be rolled back. This demonstrates that signals run in the same database transaction as the caller.
