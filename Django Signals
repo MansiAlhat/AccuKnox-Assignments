@@ -6,7 +6,7 @@ Code:
 @receiver(post_save, sender=User)
 def signal_receiver(sender, instance, **kwargs):
     print("Signal started")
-    time.sleep(5)  # Simulate long-running task
+    time.sleep(5) 
     print("Signal finished")
 
 new_user = User.objects.create(username="test_user")
@@ -47,7 +47,7 @@ try:
     with transaction.atomic():
         new_user = User.objects.create(username="test_user")
         print("User created")
-        raise Exception("Something went wrong!")  # Force an error to rollback
+        raise Exception("Something went wrong!") 
 except Exception as e:
     print(e)
 
